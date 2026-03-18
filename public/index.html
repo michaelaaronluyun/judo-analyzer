@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLSU Judo Analyzer — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root,[data-theme="dark"]{
+  --dlsu-green:#006f41;
+  --dlsu-green-dim:rgba(0,111,65,0.15);
+  --dlsu-green-bright:#00a85a;
+  --gold:#d4a017;
+  --bg:#080c0f;
+  --bg2:#0d1318;
+  --bg3:#111a20;
+  --surface:#141e26;
+  --surface2:#1a2630;
+  --border:#1e2e38;
+  --border2:#263444;
+  --text:#e8f0ea;
+  --text2:#8faa98;
+  --text3:#4a6455;
+  --red:#e8413d;
+  --input-bg:#ffffff;
+  --input-text:#111827;
+  --input-placeholder:#9ca3af;
+  --input-border:#d1d5db;
+  --shadow:rgba(0,0,0,0.5);
+}
+
+[data-theme="light"]{
+  --bg:#f0f4f1;
+  --bg2:#e6ede8;
+  --bg3:#dde7df;
+  --surface:#ffffff;
+  --surface2:#f5faf6;
+  --border:#c8dace;
+  --border2:#a8c4b0;
+  --text:#0d1f14;
+  --text2:#2d5c3c;
+  --text3:#5a8a6a;
+  --input-bg:#ffffff;
+  --input-text:#111827;
+  --input-placeholder:#6b7280;
+  --input-border:#b0d0bc;
+  --shadow:rgba(0,0,0,0.12);
+}
+
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);transition:background 0.25s,color 0.25s}
+body{display:flex;flex-direction:column}
+
+/* ── TOPBAR ──────────────────────────────────────────────── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;transition:background 0.25s,border-color 0.25s}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-emblem{width:38px;height:38px;background:var(--dlsu-green);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;letter-spacing:-0.5px;flex-shrink:0}
+.nav-titles{display:flex;flex-direction:column;line-height:1}
+.nav-main{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:0.04em;color:var(--text)}
+.nav-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;margin-top:3px}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-link{color:var(--text2);text-decoration:none;font-size:13px;font-weight:600;padding:7px 14px;border-radius:7px;transition:all 0.2s;border:1px solid transparent}
+.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--surface)}
+
+/* theme toggle in nav */
+.nav-theme-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);transition:background 0.15s,border-color 0.15s}
+.nav-theme-toggle:hover{background:var(--surface2);border-color:var(--border2)}
+.theme-track-sm{width:30px;height:16px;background:var(--border2);border-radius:8px;position:relative;transition:background 0.2s;flex-shrink:0}
+.theme-track-sm.light-mode{background:var(--dlsu-green)}
+.theme-thumb-sm{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.theme-track-sm.light-mode .theme-thumb-sm{transform:translateX(14px)}
+.theme-icon-sm{font-size:12px;user-select:none}
+
+/* ── MAIN LAYOUT ─────────────────────────────────────────── */
+main{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0}
+
+/* ── LEFT PANEL ──────────────────────────────────────────── */
+.left-panel{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg3);border-right:1px solid var(--border);overflow:hidden;padding:60px 48px}
+.left-panel::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:36px 36px;opacity:0.35;pointer-events:none}
+.left-panel::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,var(--dlsu-green-dim) 0%,transparent 70%);pointer-events:none}
+.left-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px;text-align:center}
+
+/* animated judo SVG mark */
+.judo-mark{animation:float 4s ease-in-out infinite;filter:drop-shadow(0 12px 40px rgba(0,111,65,0.25))}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+.left-tagline h2{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;letter-spacing:-0.01em;line-height:1.15;color:var(--text)}
+.left-tagline h2 em{font-style:normal;color:var(--dlsu-green-bright)}
+.left-tagline p{margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase}
+
+.feature-pills{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.f-pill{background:var(--dlsu-green-dim);border:1px solid rgba(0,111,65,0.25);color:var(--dlsu-green-bright);font-family:'IBM Plex Mono',monospace;font-size:9px;padding:5px 10px;border-radius:20px;letter-spacing:0.04em}
+
+/* ── RIGHT PANEL ─────────────────────────────────────────── */
+.right-panel{display:flex;align-items:center;justify-content:center;padding:48px 40px;background:var(--bg);transition:background 0.25s}
+.auth-box{width:100%;max-width:420px}
+
+/* tab switcher */
+.switcher{display:flex;gap:0;margin-bottom:28px;border-bottom:1px solid var(--border)}
+.sw-btn{flex:1;background:none;border:none;padding:13px 0;font-family:'Barlow',sans-serif;font-size:14px;font-weight:700;color:var(--text3);cursor:pointer;position:relative;transition:color 0.2s;letter-spacing:0.01em}
+.sw-btn::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--dlsu-green-bright);transform:scaleX(0);transition:transform 0.25s ease;border-radius:2px}
+.sw-btn.active{color:var(--text)}
+.sw-btn.active::after{transform:scaleX(1)}
+.form-sec{display:none}
+.form-sec.active{display:block}
+
+.form-header{margin-bottom:24px}
+.form-header h2{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;letter-spacing:-0.01em;color:var(--text)}
+.form-header p{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:6px}
+
+/* fields */
+.field{margin-bottom:16px}
+.field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:7px}
+.field input{width:100%;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:8px;padding:11px 14px;color:var(--input-text);font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color 0.2s,box-shadow 0.2s}
+.field input::placeholder{color:var(--input-placeholder)}
+.field input:focus{border-color:var(--dlsu-green);box-shadow:0 0 0 3px rgba(0,111,65,0.15)}
+
+/* submit */
+.btn-submit{width:100%;background:var(--dlsu-green);color:#fff;border:none;border-radius:8px;padding:13px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;margin-top:4px;transition:opacity 0.2s,transform 0.15s,background 0.2s;position:relative;overflow:hidden}
+.btn-submit:hover:not(:disabled){background:#007a48;transform:translateY(-1px)}
+.btn-submit:active:not(:disabled){transform:translateY(0)}
+.btn-submit:disabled{opacity:0.5;cursor:not-allowed}
+
+/* footer */
+.form-footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.form-footer a,.form-footer .link-btn{font-size:12px;color:var(--text3);text-decoration:none;background:none;border:none;cursor:pointer;font-family:'Barlow',sans-serif;transition:color 0.2s}
+.form-footer a:hover,.form-footer .link-btn:hover{color:var(--text2)}
+.form-footer .link-btn.accent{color:var(--dlsu-green-bright);font-weight:600}
+
+/* message */
+.msg{margin-top:12px;padding:9px 13px;border-radius:7px;font-size:12px;font-family:'IBM Plex Mono',monospace;display:none}
+.msg.show{display:block}
+.msg.err{background:rgba(232,65,61,0.08);border:1px solid rgba(232,65,61,0.25);color:#f08080}
+.msg.ok{background:rgba(0,111,65,0.1);border:1px solid rgba(0,111,65,0.3);color:var(--dlsu-green-bright)}
+
+/* spinner */
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp 0.6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media(max-width:768px){
+  main{grid-template-columns:1fr}
+  .left-panel{display:none}
+  nav{padding:0 16px}
+  .right-panel{padding:32px 20px}
+}
+/* ── PAGE OVERLAY SYSTEM ────────────────────────────────────── */
+.page-overlay{position:fixed;inset:0;z-index:900;background:var(--bg);overflow-y:auto;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);display:flex;flex-direction:column}
+.page-overlay.open{transform:translateX(0)}
+.overlay-topbar{display:flex;align-items:center;gap:12px;padding:0 28px;height:56px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:10}
+.overlay-back{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;transition:background 0.15s,border-color 0.15s;text-decoration:none}
+.overlay-back:hover{background:var(--surface2);border-color:var(--border2);color:var(--text)}
+.overlay-back svg{width:13px;height:13px;flex-shrink:0}
+.overlay-page-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.04em;color:var(--text);text-transform:uppercase}
+.overlay-body{flex:1;max-width:860px;width:100%;margin:0 auto;padding:40px 28px 80px}
+/* hero banner */
+.overlay-hero{display:flex;align-items:flex-end;gap:20px;margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+.overlay-hero-icon{width:60px;height:60px;border-radius:14px;background:var(--dlsu-green);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.overlay-hero-text h1{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;letter-spacing:-0.01em;color:var(--text);line-height:1.1}
+.overlay-hero-text h1 em{font-style:normal;color:var(--dlsu-green-bright)}
+.overlay-hero-text p{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:6px;letter-spacing:0.04em;text-transform:uppercase}
+/* content blocks */
+.ov-section{margin-bottom:36px}
+.ov-section-label{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--dlsu-green-bright);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ov-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.ov-section h2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:0.01em}
+.ov-section p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.ov-section p:last-child{margin-bottom:0}
+/* card grid */
+.ov-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:4px}
+.ov-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color 0.2s,background 0.2s}
+.ov-card:hover{border-color:var(--border2);background:var(--surface2)}
+.ov-card-icon{font-size:22px;margin-bottom:10px}
+.ov-card h3{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.ov-card p{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);line-height:1.6}
+/* step list */
+.ov-steps{display:flex;flex-direction:column;gap:0;margin-top:4px}
+.ov-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.ov-step:last-child{border-bottom:none}
+.ov-step-num{width:32px;height:32px;border-radius:50%;background:var(--dlsu-green);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.ov-step-body h3{font-family:'Barlow',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.ov-step-body p{font-size:13px;color:var(--text2);line-height:1.65}
+/* faq */
+.ov-faq{margin-top:4px}
+.ov-faq-item{border-bottom:1px solid var(--border);padding:14px 0}
+.ov-faq-item:last-child{border-bottom:none}
+.ov-faq-q{font-family:'Barlow',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ov-faq-q svg{width:14px;height:14px;flex-shrink:0;color:var(--text3);transition:transform 0.2s}
+.ov-faq-item.open .ov-faq-q svg{transform:rotate(180deg)}
+.ov-faq-a{font-size:13px;color:var(--text2);line-height:1.65;display:none;padding-top:4px}
+.ov-faq-item.open .ov-faq-a{display:block}
+/* metric table */
+.ov-metric-table{width:100%;border-collapse:collapse;margin-top:4px;font-size:13px}
+.ov-metric-table th{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg3)}
+.ov-metric-table td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.55}
+.ov-metric-table td:first-child{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--text);white-space:nowrap}
+.ov-metric-table tr:last-child td{border-bottom:none}
+.ov-metric-table tr:hover td{background:var(--surface)}
+/* note box */
+.ov-note{display:flex;gap:12px;background:var(--dlsu-green-dim);border:1px solid rgba(0,111,65,0.25);border-radius:8px;padding:14px;margin-top:16px}
+.ov-note-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.ov-note p{font-size:12px;color:var(--text2);line-height:1.6;margin:0}
+/* team grid */
+.ov-team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:4px}
+.ov-team-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.ov-team-avatar{width:44px;height:44px;border-radius:50%;background:var(--dlsu-green);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#fff;margin:0 auto 10px}
+.ov-team-name{font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px}
+.ov-team-role{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em}
+/* tech stack */
+.ov-tech-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.ov-tech-pill{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:9px;padding:4px 10px;border-radius:6px}
+
+.nav-page-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;transition:background 0.15s,border-color 0.15s,color 0.15s;white-space:nowrap}
+.nav-page-btn:hover{background:var(--surface2);border-color:var(--border2);color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ───────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-emblem">DLSU</div>
+    <div class="nav-titles">
+      <span class="nav-main">Judo Analyzer</span>
+      <span class="nav-sub">De La Salle University · Collegiate Judo</span>
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-page-btn" onclick="openOverlay('overlayAbout')">About</button>
+    <button class="nav-page-btn" onclick="openOverlay('overlayHelp')">Help</button>
+    <div class="nav-theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <span class="theme-icon-sm">🌙</span>
+      <div class="theme-track-sm" id="themeTrack"><div class="theme-thumb-sm"></div></div>
+      <span class="theme-icon-sm">☀️</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ── MAIN ───────────────────────────────────────────────── -->
+<main>
+
+  <!-- LEFT: Visual panel -->
+  <div class="left-panel">
+    <div class="left-content">
+
+      <!-- Animated judo SVG mark -->
+      <svg class="judo-mark" width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer ring -->
+        <circle cx="120" cy="120" r="108" fill="none" stroke="rgba(0,111,65,0.12)" stroke-width="1.5"/>
+        <circle cx="120" cy="120" r="90" fill="rgba(0,111,65,0.05)" stroke="rgba(0,111,65,0.1)" stroke-width="1"/>
+        <!-- Green athlete (left) -->
+        <g stroke="#00a85a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <circle cx="96" cy="65" r="10" fill="rgba(0,168,90,0.1)"/>
+          <line x1="96" y1="75" x2="96" y2="112"/>
+          <line x1="96" y1="88" x2="78" y2="102"/>
+          <line x1="96" y1="88" x2="116" y2="94"/>
+          <line x1="96" y1="112" x2="85" y2="138"/>
+          <line x1="96" y1="112" x2="106" y2="139"/>
+        </g>
+        <!-- White/light athlete (right) -->
+        <g stroke="var(--text2)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <circle cx="150" cy="74" r="10" fill="rgba(139,170,152,0.1)"/>
+          <line x1="150" y1="84" x2="138" y2="114"/>
+          <line x1="145" y1="99" x2="128" y2="90"/>
+          <line x1="145" y1="99" x2="162" y2="93"/>
+          <line x1="138" y1="114" x2="124" y2="136"/>
+          <line x1="138" y1="114" x2="153" y2="134"/>
+        </g>
+        <!-- Grip line (dashed gold) -->
+        <path d="M 116 94 Q 136 74 150 84" fill="none" stroke="#d4a017" stroke-width="1.8" stroke-dasharray="5 4" opacity="0.7"/>
+        <!-- Keypoint dots -->
+        <circle cx="96" cy="65" r="4.5" fill="#00a85a" opacity="0.9"/>
+        <circle cx="150" cy="74" r="4.5" fill="var(--text2)" opacity="0.9"/>
+        <circle cx="78" cy="102" r="3" fill="#00a85a" opacity="0.6"/>
+        <circle cx="116" cy="94" r="3" fill="#00a85a" opacity="0.6"/>
+        <circle cx="128" cy="90" r="3" fill="var(--text2)" opacity="0.6"/>
+        <circle cx="162" cy="93" r="3" fill="var(--text2)" opacity="0.6"/>
+        <!-- Progress bar strip -->
+        <rect x="46" y="178" width="148" height="5" rx="2.5" fill="rgba(0,111,65,0.2)"/>
+        <rect x="46" y="178" width="56" height="5" rx="2.5" fill="rgba(0,111,65,0.55)"/>
+        <!-- Corner brackets -->
+        <line x1="24" y1="24" x2="40" y2="24" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+        <line x1="24" y1="24" x2="24" y2="40" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+        <line x1="216" y1="24" x2="200" y2="24" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+        <line x1="216" y1="24" x2="216" y2="40" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+        <line x1="24" y1="216" x2="40" y2="216" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+        <line x1="24" y1="216" x2="24" y2="200" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+        <line x1="216" y1="216" x2="200" y2="216" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+        <line x1="216" y1="216" x2="216" y2="200" stroke="rgba(0,111,65,0.3)" stroke-width="1.5"/>
+      </svg>
+
+      <div class="left-tagline">
+        <h2>Train Smarter.<br><em>Analyze Every Move.</em></h2>
+        <p>Kalman tracking · Technique detection · Real-time</p>
+      </div>
+
+      <div class="feature-pills">
+        <span class="f-pill">Technique Tracking</span>
+        <span class="f-pill">Gi Color ID</span>
+        <span class="f-pill">Kuzushi Analysis</span>
+        <span class="f-pill">Contact Heatmap</span>
+        <span class="f-pill">Event Log</span>
+        <span class="f-pill">AI Insights</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Auth forms -->
+  <div class="right-panel">
+    <div class="auth-box">
+
+      <div class="switcher">
+        <button class="sw-btn active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+        <button class="sw-btn" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- SIGN IN -->
+      <div class="form-sec active" id="secLogin">
+        <div class="form-header">
+          <h2>Sign In</h2>
+          <p>Welcome back — enter your credentials to continue</p>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="lEmail" placeholder="johndoe@dlsu.edu.ph" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="lPass" placeholder="••••••" autocomplete="current-password">
+        </div>
+        <button class="btn-submit" id="btnLogin" data-label="Sign In" onclick="doLogin()">Sign In</button>
+        <div class="msg" id="msgLogin"></div>
+        <div class="form-footer">
+          <a href="#">Forgot password</a>
+          <button class="link-btn accent" onclick="switchTab('signup')">Create account</button>
+        </div>
+      </div>
+
+      <!-- SIGN UP -->
+      <div class="form-sec" id="secSignup">
+        <div class="form-header">
+          <h2>Sign Up</h2>
+          <p>Create your Judo Analyzer account</p>
+        </div>
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="sName" placeholder="John Doe" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="sEmail" placeholder="johndoe@dlsu.edu.ph" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password <span style="color:var(--text3);text-transform:none;letter-spacing:0;font-weight:400">(min 6 characters)</span></label>
+          <input type="password" id="sPass" placeholder="••••••" autocomplete="new-password">
+        </div>
+        <button class="btn-submit" id="btnSignup" data-label="Sign Up" onclick="doSignup()">Sign Up</button>
+        <div class="msg" id="msgSignup"></div>
+        <div class="form-footer">
+          <a href="#">Forgot password</a>
+          <button class="link-btn accent" onclick="switchTab('login')">Already have an account?</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+/* ── Theme ──────────────────────────────────────────────── */
+(function(){
+  const saved=localStorage.getItem('judo-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  if(saved==='light')document.getElementById('themeTrack').classList.add('light-mode');
+})();
+
+function toggleTheme(){
+  const html=document.documentElement,track=document.getElementById('themeTrack');
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const next=isDark?'light':'dark';
+  html.setAttribute('data-theme',next);
+  localStorage.setItem('judo-theme',next);
+  track.classList.toggle('light-mode',next==='light');
+}
+
+/* ── Tabs ───────────────────────────────────────────────── */
+function switchTab(tab){
+  const isLogin=tab==='login';
+  document.getElementById('tabLogin').classList.toggle('active',isLogin);
+  document.getElementById('tabSignup').classList.toggle('active',!isLogin);
+  document.getElementById('secLogin').classList.toggle('active',isLogin);
+  document.getElementById('secSignup').classList.toggle('active',!isLogin);
+  ['msgLogin','msgSignup'].forEach(id=>{const el=document.getElementById(id);el.className='msg';el.textContent='';});
+}
+
+function showMsg(id,text,type){const el=document.getElementById(id);el.textContent=text;el.className='msg show '+type;}
+
+function setBusy(btnId,busy){
+  const btn=document.getElementById(btnId),label=btn.getAttribute('data-label');
+  btn.disabled=busy;
+  btn.innerHTML=busy?'<span class="spin"></span>Please wait...':label;
+}
+
+/* ── Auth ───────────────────────────────────────────────── */
+async function doLogin(){
+  const email=document.getElementById('lEmail').value.trim(),pass=document.getElementById('lPass').value;
+  if(!email||!pass){showMsg('msgLogin','Please fill in all fields.','err');return;}
+  setBusy('btnLogin',true);
+  try{
+    const r=await fetch('/api/auth?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(r.ok){showMsg('msgLogin','✓ Welcome back, '+d.username+'! Loading...','ok');setTimeout(()=>window.location.href='/app',900);}
+    else{showMsg('msgLogin',d.error||'Login failed.','err');setBusy('btnLogin',false);}
+  }catch(e){showMsg('msgLogin','Network error — please try again.','err');setBusy('btnLogin',false);}
+}
+
+async function doSignup(){
+  const name=document.getElementById('sName').value.trim(),email=document.getElementById('sEmail').value.trim(),pass=document.getElementById('sPass').value;
+  if(!name||!email||!pass){showMsg('msgSignup','Please fill in all fields.','err');return;}
+  if(pass.length<6){showMsg('msgSignup','Password must be at least 6 characters.','err');return;}
+  setBusy('btnSignup',true);
+  try{
+    const r=await fetch('/api/auth?action=register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:name,email,password:pass})});
+    const d=await r.json();
+    if(r.ok){showMsg('msgSignup','✓ Account created! Redirecting...','ok');setTimeout(()=>window.location.href='/app',900);}
+    else{showMsg('msgSignup',d.error||'Registration failed.','err');setBusy('btnSignup',false);}
+  }catch(e){showMsg('msgSignup','Network error — please try again.','err');setBusy('btnSignup',false);}
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  if(document.getElementById('secLogin').classList.contains('active'))doLogin();
+  else doSignup();
+});
+</script>
+<!-- ── ABOUT OVERLAY ─────────────────────────────────────────── -->
+<div class="page-overlay" id="overlayAbout">
+  <div class="overlay-topbar">
+    <button class="overlay-back" onclick="closeOverlay('overlayAbout')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <span class="overlay-page-title">About</span>
+  </div>
+  <div class="overlay-body">
+    <div class="overlay-hero">
+      <div class="overlay-hero-icon">🥋</div>
+      <div class="overlay-hero-text">
+        <h1>About <em>Judo Analyzer</em></h1>
+        <p>ITISDEV/ITISHCI/Research Study · De La Salle University · 2024</p>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-label">Overview</div>
+      <h2>What is Judo Analyzer?</h2>
+      <p>Judo Analyzer is a pose estimation-driven Decision Support System built for the DLSU Collegiate Judo Team. It processes match footage directly in the browser using TensorFlow.js and MoveNet, detecting athlete keypoints at up to 30 frames per second without uploading any video to a server.</p>
+      <p>The system identifies two athletes in real time using gi (uniform) color anchoring, classifies judo techniques from joint angle patterns, measures balance disruption (kuzushi), maps contact zones onto a body heatmap, and logs every detected event with a precise timestamp.</p>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-label">Core Features</div>
+      <div class="ov-card-grid">
+        <div class="ov-card"><div class="ov-card-icon">🎯</div><h3>Technique Detection</h3><p>Classifies 8+ judo throws including Ippon Seoi Nage, O Goshi, Harai Goshi, and Osoto Gari using a 60-frame joint angle classifier.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">🎨</div><h3>Gi Color ID</h3><p>Samples torso pixel data to create a stable color anchor per athlete. Survives throws and side-swaps that break position-based trackers.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">⚖️</div><h3>Kuzushi Analysis</h3><p>Measures center-of-mass displacement to quantify how much each athlete is being destabilized at any moment in the match.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">🔥</div><h3>Contact Heatmap</h3><p>Accumulates contact zone data across the full match and renders it as a radial-gradient body map for injury and grip pattern analysis.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">📋</div><h3>Event Log</h3><p>Timestamped, clickable log of every detected technique above the confidence threshold. Exportable to CSV for further analysis.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">🧠</div><h3>AI Insights</h3><p>Upcoming Claude AI integration that converts raw session metrics into structured, natural-language coaching recommendations per athlete.</p></div>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-label">Technical Architecture</div>
+      <h2>How it works</h2>
+      <p>Video is processed entirely client-side using TensorFlow.js with WebGL or WASM acceleration. The MoveNet MultiPose Lightning model detects up to 6 people at 256px resolution. Detected keypoints are sent to a Python Flask backend at ~30fps where the JudoTechniqueClassifier and KalmanTrack modules run biomechanical analysis.</p>
+      <div class="ov-tech-list">
+        <span class="ov-tech-pill">TensorFlow.js</span>
+        <span class="ov-tech-pill">MoveNet MultiPose</span>
+        <span class="ov-tech-pill">Python Flask</span>
+        <span class="ov-tech-pill">MongoDB Atlas</span>
+        <span class="ov-tech-pill">Kalman Filter</span>
+        <span class="ov-tech-pill">Hungarian Algorithm</span>
+        <span class="ov-tech-pill">Claude AI</span>
+        <span class="ov-tech-pill">ngrok</span>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-label">Development Team</div>
+      <div class="ov-team-grid">
+        <div class="ov-team-card"><div class="ov-team-avatar">KC</div><div class="ov-team-name">King Cochise John</div><div class="ov-team-role">Lead Developer</div></div>
+        <div class="ov-team-card"><div class="ov-team-avatar">AA</div><div class="ov-team-name">Algen Roi Abagat</div><div class="ov-team-role">Backend Engineer</div></div>
+        <div class="ov-team-card"><div class="ov-team-avatar">ML</div><div class="ov-team-name">Michael Aaron Luyun</div><div class="ov-team-role">Systems Architect</div></div>
+        <div class="ov-team-card"><div class="ov-team-avatar">CC</div><div class="ov-team-name">Cody Casem</div><div class="ov-team-role">Developer</div></div>
+      </div>
+      <div class="ov-note" style="margin-top:14px"><div class="ov-note-icon">🎓</div><p>Supervised by <strong>Dr. Raphael Gonda</strong> · ITISDEV/ITISHCI/Research Study · College of Computer Studies, De La Salle University Manila</p></div>
+    </div>
+
+  </div>
+</div>
+<!-- ── HELP OVERLAY ──────────────────────────────────────────── -->
+<div class="page-overlay" id="overlayHelp">
+  <div class="overlay-topbar">
+    <button class="overlay-back" onclick="closeOverlay('overlayHelp')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <span class="overlay-page-title">Help</span>
+  </div>
+  <div class="overlay-body">
+    <div class="overlay-hero">
+      <div class="overlay-hero-icon">💬</div>
+      <div class="overlay-hero-text">
+        <h1>Help &amp; <em>Support</em></h1>
+        <p>Troubleshooting · FAQ · System Requirements</p>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-label">System Requirements</div>
+      <h2>Before you start</h2>
+      <p>Judo Analyzer runs entirely in your browser. For the best experience, use a modern browser with WebGL support and a machine with a dedicated GPU.</p>
+      <div class="ov-card-grid">
+        <div class="ov-card"><div class="ov-card-icon">🌐</div><h3>Browser</h3><p>Chrome 90+, Edge 90+, or Firefox 88+. Safari is supported but WebGL performance may vary.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">💻</div><h3>Hardware</h3><p>Dedicated GPU strongly recommended for real-time pose detection. 8GB RAM minimum, 16GB preferred.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">🎬</div><h3>Video Format</h3><p>MP4 (H.264), WEBM, or MOV. 1080p or 720p recommended. Minimum 24fps for reliable technique detection.</p></div>
+        <div class="ov-card"><div class="ov-card-icon">🔒</div><h3>Privacy</h3><p>Video files are never uploaded to any server. All pose detection runs locally in your browser via TensorFlow.js.</p></div>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-label">Frequently Asked Questions</div>
+      <div class="ov-faq">
+        <div class="ov-faq-item">
+          <div class="ov-faq-q" onclick="toggleFaq(this)">Why does it say "Loading model..." for a long time?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ov-faq-a">The MoveNet MultiPose model (~3MB) is downloaded from the TensorFlow CDN on first load. On slow connections this can take 20–40 seconds. Once downloaded, subsequent loads are served from browser cache and load in under 2 seconds.</div>
+        </div>
+        <div class="ov-faq-item">
+          <div class="ov-faq-q" onclick="toggleFaq(this)">The athlete skeletons keep swapping between the two athletes. How do I fix this?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ov-faq-a">The system uses gi color to anchor athlete identities, not screen position. For best results, ensure the first 20 frames of the video show both athletes clearly with their gi visible. The color calibration window in the sidebar shows when this is complete. If both athletes wear very similar colored gis, identification may be less stable.</div>
+        </div>
+        <div class="ov-faq-item">
+          <div class="ov-faq-q" onclick="toggleFaq(this)">Why are some techniques showing very low confidence or not being detected?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ov-faq-a">Technique detection requires a clear view of both athletes with minimal occlusion. Fast throws lasting under 0.5 seconds may be partially missed. The confidence threshold is set at 60% — techniques below this appear as "Standing / Moving" in the card. Camera angle and video quality significantly affect accuracy.</div>
+        </div>
+        <div class="ov-faq-item">
+          <div class="ov-faq-q" onclick="toggleFaq(this)">The FPS counter is showing below 10fps. What can I do?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ov-faq-a">Low FPS usually means the WebGL backend is not being used. Try refreshing the page and waiting for the model status to show "Backend: webgl". Close other browser tabs and GPU-intensive applications. On machines without a dedicated GPU, 8–15fps is normal and the system will still function correctly.</div>
+        </div>
+        <div class="ov-faq-item">
+          <div class="ov-faq-q" onclick="toggleFaq(this)">How do I export the match data?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ov-faq-a">Click the CSV button in the video toolbar or inside the Event Log section. This downloads a CSV file containing every detected event with its timestamp, athlete identifier, technique name, and confidence score. Open in Excel or Google Sheets for further analysis.</div>
+        </div>
+        <div class="ov-faq-item">
+          <div class="ov-faq-q" onclick="toggleFaq(this)">Can I analyze live video from a camera instead of a file?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ov-faq-a">Live camera input is not supported in the current version. The system is designed for post-match analysis of recorded footage. Live mode is planned for a future release.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-label">Contact</div>
+      <h2>Need more help?</h2>
+      <p>For technical issues or feedback, reach out to the development team directly via email:</p>
+      <ul style="margin:10px 0 10px 18px;font-size:13px;color:var(--text2);line-height:2"><li><a href="mailto:michael_aaron_luyun@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">michael_aaron_luyun@dlsu.edu.ph</a> — Michael Aaron Luyun</li><li><a href="mailto:algen_abagat@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">algen_abagat@dlsu.edu.ph</a> — Algen Roi Abagat</li><li><a href="mailto:cochise_king@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">cochise_king@dlsu.edu.ph</a> — King Cochise John</li><li><a href="mailto:cody_casem@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">cody_casem@dlsu.edu.ph</a> — Cody Casem</li></ul><p style="font-size:13px;color:var(--text2);line-height:1.7">You may also contact supervising professor Dr. Raphael Gonda through the DLSU course portal.</p>
+      <div class="ov-note"><div class="ov-note-icon">ℹ️</div><p>This system is an academic prototype developed for ITISDEV/ITISHCI/Research Study at De La Salle University. It is not intended for commercial use.</p></div>
+    </div>
+
+  </div>
+</div>
+<script>
+/* ── PAGE OVERLAY SYSTEM ─────────────────────────────────── */
+function openOverlay(id){
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeOverlay(id){
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow='';
+}
+function toggleFaq(el){
+  el.closest('.ov-faq-item').classList.toggle('open');
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    document.querySelectorAll('.page-overlay.open').forEach(function(o){o.classList.remove('open');});
+    document.body.style.overflow='';
+  }
+});
+</script>
+</body>
+</html>
