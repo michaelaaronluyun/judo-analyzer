@@ -1,45 +1,17 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/*.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/auth",
-      "dest": "/api/auth.py"
-    },
-    {
-      "src": "/api/analyze",
-      "dest": "/api/analyze.py"
-    },
-    {
-      "src": "/api/heatmap(/reset)?",
-      "dest": "/api/heatmap.py"
-    },
-    {
-      "src": "/api/export-csv",
-      "dest": "/api/export_csv.py"
-    },
-    {
-      "src": "/app",
-      "dest": "/public/app.html"
-    },
-    {
-      "src": "/",
-      "dest": "/public/index.html"
-    }
-  ],
   "functions": {
     "api/*.py": {
       "maxDuration": 30,
       "memory": 1024
     }
-  }
+  },
+  "routes": [
+    { "src": "/api/auth",           "dest": "/api/auth.py" },
+    { "src": "/api/analyze",        "dest": "/api/analyze.py" },
+    { "src": "/api/heatmap(/reset)?","dest": "/api/heatmap.py" },
+    { "src": "/api/export-csv",     "dest": "/api/export_csv.py" },
+    { "src": "/app",                "dest": "/public/app.html" },
+    { "src": "/",                   "dest": "/public/index.html" }
+  ]
 }
