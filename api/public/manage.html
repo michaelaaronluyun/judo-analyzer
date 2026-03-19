@@ -313,13 +313,15 @@ async function init() {
     const r = await fetch('/api/auth?action=me');
     if (!r.ok) { window.location.href = '/'; return; }
     me = await r.json();
-    me.role = me.role || 'athlete'; // normalise
-    const isAdmin = ['admin','coach'].includes(me.role);
-    document.getElementById('mainLayout').style.display = 'flex';
-    // Hide write controls for athletes (view-only)
-    if (!isAdmin) {
-      document.querySelectorAll('.btn-primary, .btn-edit, .btn-delete').forEach(el => el.style.display='none');
+    me.role = me.role || 'athlete';
+    // Only admins can access this page
+    if (me.role !== 'admin') {
+      document.getElementById('accessDenied').style.display = 'flex';
+      document.getElementById('mainLayout').style.display   = 'none';
+      return;
     }
+    document.getElementById('mainLayout').style.display = 'flex';
+    document.getElementById('accessDenied').style.display = 'none';
     await loadUsers();
   } catch(e) {
     window.location.href = '/';
@@ -373,8 +375,8 @@ function renderTable() {
   // Store users in map so onclick can look them up by id safely
   filtered.forEach(u => { userMap[u._id] = u; });
   tbody.innerHTML = filtered.map(u => {
-    const ini = (u.username||'?').slice(0,2).toUpperCase();
-    const role = (u.role && u.role.trim()) ? u.role : 'athlete';
+    const ini  = (u.username||'?').slice(0,2).toUpperCase();
+    const role = (u.role && ['admin','coach','athlete'].includes(u.role)) ? u.role : 'athlete';
     const isSelf = me && u.email === me.email;
     const id = u._id;
     return `
