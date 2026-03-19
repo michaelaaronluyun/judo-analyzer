@@ -260,22 +260,7 @@ class ContactHeatmapTracker:
 classifier      = JudoTechniqueClassifier()
 heatmap_tracker = ContactHeatmapTracker()
 
-# ── Helper: read HTML files ───────────────────────────────────────────────────
-def _read_html(filename):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", filename)
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
-
-# ── Routes: pages ─────────────────────────────────────────────────────────────
-@app.route("/")
-def home():
-    return _read_html("index.html"), 200, {"Content-Type": "text/html; charset=utf-8"}
-
-@app.route("/app")
-def analyzer_app():
-    if not read_token():
-        r = make_response("", 302); r.headers["Location"] = "/"; return r
-    return _read_html("app.html"), 200, {"Content-Type": "text/html; charset=utf-8"}
+# ── Routes: pages served statically by Vercel — no Flask routes needed ──────
 
 # ── Routes: auth ──────────────────────────────────────────────────────────────
 @app.route("/api/auth", methods=["GET", "POST"])
@@ -285,7 +270,7 @@ def auth():
     if action == "me":
         sess = read_token()
         if not sess: return jsonify({"error":"not logged in"}), 401
-        return jsonify({"email":sess.get("email",""), "username":sess.get("username","")})
+        return jsonify({"email":sess.get("email",""), "username":sess.get("username",""), "role":sess.get("role","athlete")})
 
     if action == "logout":
         r = make_response("", 302); r.headers["Location"] = "/"; r.delete_cookie(COOKIE_NAME); return r
@@ -307,16 +292,18 @@ def auth():
         if col.find_one({"email":data["email"]}): return jsonify({"error":"Email already registered"}), 409
         col.create_index("email", unique=True)
         col.insert_one({"username":data["username"],"email":data["email"],
-                         "password":bcrypt.generate_password_hash(data["password"]).decode()})
-        token = make_token({"email":data["email"],"username":data["username"]})
-        r = make_response(jsonify({"message":"Account created","username":data["username"]}), 201)
+                         "password":bcrypt.generate_password_hash(data["password"]).decode(),
+                         "role": data.get("role","athlete")})
+        token = make_token({"email":data["email"],"username":data["username"],"role":data.get("role","athlete")})
+        r = make_response(jsonify({"message":"Account created","username":data["username"],"role":data.get("role","athlete")}), 201)
         r.set_cookie(COOKIE_NAME, token, max_age=86400, httponly=True, samesite="Lax"); return r
 
     if action == "login":
         user = col.find_one({"email":data.get("email","")})
         if user and bcrypt.check_password_hash(user["password"], data.get("password","")):
-            token = make_token({"email":user["email"],"username":user["username"]})
-            r = make_response(jsonify({"message":"OK","username":user["username"]}))
+            role = user.get("role", "athlete")
+            token = make_token({"email":user["email"],"username":user["username"],"role":role})
+            r = make_response(jsonify({"message":"OK","username":user["username"],"role":role}))
             r.set_cookie(COOKIE_NAME, token, max_age=86400, httponly=True, samesite="Lax"); return r
         return jsonify({"error":"Invalid email or password"}), 401
 
@@ -370,3 +357,70 @@ def reset_heatmap():
 def export_csv():
     return Response(classifier.export_csv(), mimetype="text/csv",
                     headers={"Content-Disposition":"attachment; filename=judo_events.csv"})
+
+# ── Helper: admin/coach guard ─────────────────────────────────────────────────
+def require_admin():
+    """Returns (sess, None) if admin/coach, or (None, error_response)."""
+    sess = read_token()
+    if not sess:
+        return None, (jsonify({"error": "not logged in"}), 401)
+    if sess.get("role") not in ("admin", "coach"):
+        return None, (jsonify({"error": "Forbidden — admin or coach role required"}), 403)
+    return sess, None
+
+# ── Routes: user management (admin/coach only) ────────────────────────────────
+@app.route("/api/users", methods=["GET"])
+def list_users():
+    sess, err = require_admin()
+    if err: return err
+    db = get_db()
+    if db is None: return jsonify({"error": "DB not configured"}), 500
+    users = list(db["users"].find({}, {"password": 0}))
+    for u in users:
+        u["_id"] = str(u["_id"])
+        u.setdefault("role", "athlete")
+    return jsonify(users)
+
+@app.route("/api/users/<user_id>", methods=["PUT"])
+def update_user(user_id):
+    sess, err = require_admin()
+    if err: return err
+    data = request.get_json(silent=True) or {}
+    db = get_db()
+    if db is None: return jsonify({"error": "DB not configured"}), 500
+    from bson import ObjectId
+    allowed = {}
+    if "username" in data: allowed["username"] = data["username"].strip()
+    if "email"    in data: allowed["email"]    = data["email"].strip()
+    if "role"     in data:
+        if data["role"] not in ("admin", "coach", "athlete"):
+            return jsonify({"error": "Invalid role"}), 400
+        allowed["role"] = data["role"]
+    if "password" in data and data["password"]:
+        if len(data["password"]) < 6:
+            return jsonify({"error": "Password min 6 chars"}), 400
+        allowed["password"] = bcrypt.generate_password_hash(data["password"]).decode()
+    if not allowed:
+        return jsonify({"error": "No valid fields to update"}), 400
+    result = db["users"].update_one({"_id": ObjectId(user_id)}, {"$set": allowed})
+    if result.matched_count == 0:
+        return jsonify({"error": "User not found"}), 404
+    return jsonify({"message": "User updated"})
+
+@app.route("/api/users/<user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    sess, err = require_admin()
+    if err: return err
+    # Prevent self-deletion
+    if sess.get("email"):
+        db = get_db()
+        if db is None: return jsonify({"error": "DB not configured"}), 500
+        from bson import ObjectId
+        target = db["users"].find_one({"_id": ObjectId(user_id)}, {"email": 1})
+        if target and target.get("email") == sess["email"]:
+            return jsonify({"error": "Cannot delete your own account"}), 400
+        result = db["users"].delete_one({"_id": ObjectId(user_id)})
+        if result.deleted_count == 0:
+            return jsonify({"error": "User not found"}), 404
+        return jsonify({"message": "User deleted"})
+    return jsonify({"error": "Session error"}), 400

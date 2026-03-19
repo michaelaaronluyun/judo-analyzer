@@ -435,6 +435,8 @@ input[type=file]{display:none}
     </div>
   </div>
   <div class="topbar-right">
+    <!-- Manage Users link (only for admins) -->
+     <button class="nav-page-btn" onclick="window.location.href='/manage'">Manage Users</button>
     <!-- How to Use link -->
     <button class="nav-page-btn" onclick="openOverlay('overlayHowTo')" title="How to Use">How to Use</button>
     <!-- Settings button -->
@@ -453,6 +455,7 @@ input[type=file]{display:none}
         <div class="pd-head">
           <div class="pd-uname" id="pdUname">—</div>
           <div class="pd-email" id="pdEmail">—</div>
+          <div class="pd-role" id="pdRole" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);padding:2px 14px 8px">—</div>
         </div>
         <div class="pd-row">⏱ Session active</div>
         <div class="pd-div"></div>
@@ -1075,7 +1078,7 @@ document.getElementById('vIn').addEventListener('change',e=>{
 
 initModel();
 
-(async()=>{try{const r=await fetch('/api/auth?action=me');if(!r.ok)return;const u=await r.json();const ini=(u.username||u.email||'?').slice(0,2).toUpperCase();document.getElementById('profAv').textContent=ini;document.getElementById('profName').textContent=u.username||u.email;document.getElementById('pdUname').textContent=u.username||'—';document.getElementById('pdEmail').textContent=u.email||'—';}catch(e){}})();
+(async()=>{try{const r=await fetch('/api/auth?action=me');if(!r.ok)return;const u=await r.json();const ini=(u.username||u.email||'?').slice(0,2).toUpperCase();document.getElementById('profAv').textContent=ini;document.getElementById('profName').textContent=u.username||u.email;document.getElementById('pdUname').textContent=u.username||'—';document.getElementById('pdEmail').textContent=u.email||'—';const ROLE_LABELS={admin:'Admin',coach:'Coach',athlete:'Athlete'};const pdRole=document.getElementById('pdRole');if(pdRole)pdRole.textContent=ROLE_LABELS[u.role]||u.role||'—';const manageBtn=document.getElementById('btnManageUsers');if(manageBtn&&['admin','coach'].includes(u.role))manageBtn.style.display='';}catch(e){}})();
 
 /* ── HEATMAP ─────────────────────────────────────────────── */
 let heatmapViewAth=0,heatmapData=null;

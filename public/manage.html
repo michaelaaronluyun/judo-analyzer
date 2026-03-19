@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLSU Judo Analyzer — Manage Users</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root,[data-theme="dark"]{
+  --dlsu-green:#006f41;--dlsu-green-dim:rgba(0,111,65,0.15);--dlsu-green-bright:#00a85a;
+  --bg:#080c0f;--bg2:#0d1318;--bg3:#111a20;--surface:#141e26;--surface2:#1a2630;
+  --border:#1e2e38;--border2:#263444;--text:#e8f0ea;--text2:#8faa98;--text3:#4a6455;
+  --red:#e8413d;--red-dim:rgba(232,65,61,0.12);--gold:#d4a017;--shadow:rgba(0,0,0,0.5);
+  --input-bg:#0d1318;--input-text:#e8f0ea;--input-border:#1e2e38;
+}
+[data-theme="light"]{
+  --bg:#f0f4f1;--bg2:#e6ede8;--bg3:#dde7df;--surface:#ffffff;--surface2:#f5faf6;
+  --border:#c8dace;--border2:#a8c4b0;--text:#0d1f14;--text2:#2d5c3c;--text3:#5a8a6a;
+  --shadow:rgba(0,0,0,0.12);--input-bg:#ffffff;--input-text:#0d1f14;--input-border:#c8dace;
+}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text)}
+body{display:flex;flex-direction:column}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-emblem{width:32px;height:32px;background:var(--dlsu-green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+.brand-main{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:0.04em;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;text-decoration:none;transition:background 0.15s,border-color 0.15s,color 0.15s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.nav-btn:hover{background:var(--surface2);border-color:var(--border2);color:var(--text)}
+.nav-btn.active{background:var(--dlsu-green-dim);border-color:rgba(0,111,65,0.4);color:var(--dlsu-green-bright)}
+
+/* ── LAYOUT ── */
+.layout{flex:1;display:flex;flex-direction:column;max-width:1100px;width:100%;margin:0 auto;padding:28px 20px;gap:20px}
+
+/* ── PAGE HEADER ── */
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.page-title h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--text);letter-spacing:-0.01em}
+.page-title p{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px}
+.btn-primary{display:flex;align-items:center;gap:7px;background:var(--dlsu-green);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s,transform 0.1s}
+.btn-primary:hover{opacity:0.88;transform:translateY(-1px)}
+
+/* ── ROLE FILTER TABS ── */
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.filter-tab{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:10px;padding:6px 14px;border-radius:20px;cursor:pointer;transition:all 0.15s}
+.filter-tab:hover{border-color:var(--border2);color:var(--text)}
+.filter-tab.active{background:var(--dlsu-green);border-color:var(--dlsu-green);color:#fff}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.stat-icon.admin{background:rgba(212,160,23,0.15)}
+.stat-icon.coach{background:rgba(0,111,65,0.15)}
+.stat-icon.athlete{background:rgba(139,170,152,0.1)}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--text);line-height:1}
+.stat-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px}
+
+/* ── USER TABLE ── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);gap:12px}
+.table-search{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 12px;flex:1;max-width:280px}
+.table-search input{background:none;border:none;outline:none;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;width:100%}
+.table-search input::placeholder{color:var(--text3)}
+.table-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3)}
+table{width:100%;border-collapse:collapse}
+thead th{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);padding:10px 18px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:13px 18px;font-size:13px;color:var(--text2);vertical-align:middle}
+tbody td:first-child{color:var(--text);font-weight:600}
+.user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.user-cell{display:flex;align-items:center;gap:10px}
+.user-name{font-weight:600;color:var(--text)}
+.user-email{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── ROLE BADGE ── */
+.role-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+.role-badge.admin{background:rgba(212,160,23,0.15);color:var(--gold);border:1px solid rgba(212,160,23,0.3)}
+.role-badge.coach{background:var(--dlsu-green-dim);color:var(--dlsu-green-bright);border:1px solid rgba(0,111,65,0.3)}
+.role-badge.athlete{background:rgba(139,170,152,0.08);color:var(--text2);border:1px solid var(--border)}
+
+/* ── ACTION BUTTONS ── */
+.action-btns{display:flex;gap:6px}
+.btn-edit,.btn-delete{border:none;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:'Barlow',sans-serif}
+.btn-edit{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-edit:hover{background:var(--dlsu-green-dim);border-color:rgba(0,111,65,0.4);color:var(--dlsu-green-bright)}
+.btn-delete{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,65,61,0.2)}
+.btn-delete:hover{background:rgba(232,65,61,0.2)}
+
+/* ── EMPTY STATE ── */
+.empty-state{padding:48px;text-align:center}
+.empty-state p{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3)}
+
+/* ── ACCESS DENIED ── */
+.access-denied{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:40px}
+.access-denied h2{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--red)}
+.access-denied p{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:460px;box-shadow:0 24px 64px var(--shadow);transform:translateY(-12px) scale(0.97);transition:transform 0.2s}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:0.04em}
+.modal-close{width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:14px;transition:background 0.15s}
+.modal-close:hover{background:var(--border2);color:var(--text)}
+.modal-body{padding:20px}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:7px}
+.field input,.field select{width:100%;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:8px;padding:10px 12px;color:var(--input-text);font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color 0.2s}
+.field input:focus,.field select:focus{border-color:var(--dlsu-green);box-shadow:0 0 0 3px rgba(0,111,65,0.12)}
+.field .hint{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);margin-top:5px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px 18px;border-top:1px solid var(--border)}
+.btn-cancel{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;transition:background 0.15s}
+.btn-cancel:hover{background:var(--border)}
+.btn-save{background:var(--dlsu-green);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s}
+.btn-save:hover{opacity:0.88}
+.btn-save:disabled{opacity:0.5;cursor:not-allowed}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:900;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);box-shadow:0 8px 32px var(--shadow);transform:translateY(20px);opacity:0;transition:all 0.25s;pointer-events:none;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(0,111,65,0.4);color:var(--dlsu-green-bright)}
+.toast.err{border-color:rgba(232,65,61,0.35);color:var(--red)}
+
+/* ── SPINNER ── */
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp 0.6s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── CONFIRM DIALOG ── */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.18s}
+.confirm-overlay.open{opacity:1;pointer-events:all}
+.confirm-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;max-width:380px;width:100%;padding:24px;box-shadow:0 20px 60px var(--shadow);transform:scale(0.95);transition:transform 0.18s}
+.confirm-overlay.open .confirm-box{transform:scale(1)}
+.confirm-box h3{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--red);margin-bottom:10px}
+.confirm-box p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.confirm-actions{display:flex;gap:8px;justify-content:flex-end}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a class="brand" href="/app">
+    <div class="brand-emblem">DLSU</div>
+    <span class="brand-main">Judo Analyzer</span>
+  </a>
+  <div class="topbar-right">
+    <a class="nav-btn" href="/app">← Analyzer</a>
+    <a class="nav-btn active" href="/manage">Manage Users</a>
+    <button class="nav-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="nav-btn" onclick="logout()" style="color:var(--red)">Sign Out</button>
+  </div>
+</header>
+
+<!-- ACCESS DENIED (hidden by default, shown if not admin/coach) -->
+<div class="access-denied" id="accessDenied" style="display:none">
+  <h2>⚠ Access Denied</h2>
+  <p>You need admin or coach role to access this page.</p>
+  <a class="nav-btn" href="/app" style="margin-top:12px">← Go back to Analyzer</a>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout" id="mainLayout" style="display:none">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Manage Users</h1>
+      <p>DLSU Judo Analyzer · User Administration</p>
+    </div>
+    <button class="btn-primary" onclick="openCreate()">+ Add User</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon admin">👑</div>
+      <div><div class="stat-val" id="countAdmin">—</div><div class="stat-label">Admins</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon coach">🥋</div>
+      <div><div class="stat-val" id="countCoach">—</div><div class="stat-label">Coaches</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon athlete">🏅</div>
+      <div><div class="stat-val" id="countAthlete">—</div><div class="stat-label">Athletes</div></div>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-role="all"    onclick="setFilter('all',this)">All</button>
+    <button class="filter-tab"        data-role="admin"  onclick="setFilter('admin',this)">Admins</button>
+    <button class="filter-tab"        data-role="coach"  onclick="setFilter('coach',this)">Coaches</button>
+    <button class="filter-tab"        data-role="athlete"onclick="setFilter('athlete',this)">Athletes</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <div class="table-search">
+        <span style="color:var(--text3);font-size:12px">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search name or email…" oninput="renderTable()">
+      </div>
+      <span class="table-count" id="tableCount"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="userTbody">
+        <tr><td colspan="3"><div class="empty-state"><p>Loading…</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- EDIT / CREATE MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Edit User</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="fName" placeholder="Juan dela Cruz">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="fEmail" placeholder="user@dlsu.edu.ph">
+      </div>
+      <div class="field">
+        <label>Role</label>
+        <select id="fRole">
+          <option value="athlete">🏅 Athlete</option>
+          <option value="coach">🥋 Coach</option>
+          <option value="admin">👑 Admin</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Password <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0" id="passHint">(leave blank to keep current)</span></label>
+        <input type="password" id="fPass" placeholder="••••••">
+        <div class="hint" id="passHintCreate" style="display:none">Minimum 6 characters</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="btnSave" onclick="saveUser()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="closeConfirm(event)">
+  <div class="confirm-box" onclick="event.stopPropagation()">
+    <h3>Delete User?</h3>
+    <p id="confirmMsg">This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-save" style="background:var(--red)" id="btnConfirmDelete" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Theme ──────────────────────────────────────────────────────────────────
+(function(){
+  const t = localStorage.getItem('judo-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+})();
+function toggleTheme(){
+  const html = document.documentElement;
+  const n = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', n);
+  localStorage.setItem('judo-theme', n);
+  document.getElementById('themeBtn').textContent = n === 'dark' ? '🌙' : '☀️';
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+let allUsers   = [];
+let filterRole = 'all';
+let editingId  = null;
+let deleteId   = null;
+let me         = null;
+
+const ROLE_COLORS = { admin: '#d4a017', coach: '#00a85a', athlete: '#8faa98' };
+const ROLE_ICONS  = { admin: '👑', coach: '🥋', athlete: '🏅' };
+
+function avatarBg(role) {
+  return { admin: '#8b6914', coach: '#006f41', athlete: '#2d5c3c' }[role] || '#2d5c3c';
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const r = await fetch('/api/auth?action=me');
+    if (!r.ok) { window.location.href = '/'; return; }
+    me = await r.json();
+    if (!['admin','coach'].includes(me.role)) {
+      document.getElementById('accessDenied').style.display = 'flex';
+      return;
+    }
+    document.getElementById('mainLayout').style.display = 'flex';
+    await loadUsers();
+  } catch(e) {
+    window.location.href = '/';
+  }
+}
+
+async function loadUsers() {
+  try {
+    const r = await fetch('/api/users');
+    if (!r.ok) { showToast('Failed to load users', 'err'); return; }
+    allUsers = await r.json();
+    updateStats();
+    renderTable();
+  } catch(e) {
+    showToast('Network error', 'err');
+  }
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('countAdmin').textContent   = allUsers.filter(u=>u.role==='admin').length;
+  document.getElementById('countCoach').textContent   = allUsers.filter(u=>u.role==='coach').length;
+  document.getElementById('countAthlete').textContent = allUsers.filter(u=>u.role==='athlete').length;
+}
+
+// ── Table ──────────────────────────────────────────────────────────────────
+function setFilter(role, el) {
+  filterRole = role;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = allUsers;
+  if (filterRole !== 'all') filtered = filtered.filter(u => u.role === filterRole);
+  if (q) filtered = filtered.filter(u =>
+    (u.username||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q)
+  );
+  document.getElementById('tableCount').textContent = `${filtered.length} user${filtered.length!==1?'s':''}`;
+  const tbody = document.getElementById('userTbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><p>No users found</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(u => {
+    const ini = (u.username||'?').slice(0,2).toUpperCase();
+    const role = u.role || 'athlete';
+    const isSelf = me && u.email === me.email;
+    return `
+    <tr>
+      <td>
+        <div class="user-cell">
+          <div class="user-avatar" style="background:${avatarBg(role)}">${ini}</div>
+          <div>
+            <div class="user-name">${esc(u.username)} ${isSelf ? '<span style="font-size:10px;color:var(--text3)">(you)</span>' : ''}</div>
+            <div class="user-email">${esc(u.email)}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span class="role-badge ${role}">${ROLE_ICONS[role]} ${role.charAt(0).toUpperCase()+role.slice(1)}</span>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick='openEdit(${JSON.stringify(u)})'>Edit</button>
+          ${!isSelf ? `<button class="btn-delete" onclick="openDelete('${u._id}','${esc(u.username)}')">Delete</button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Modal: Create ──────────────────────────────────────────────────────────
+function openCreate() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add User';
+  document.getElementById('btnSave').textContent    = 'Create User';
+  document.getElementById('passHint').style.display        = 'none';
+  document.getElementById('passHintCreate').style.display  = 'block';
+  document.getElementById('fName').value  = '';
+  document.getElementById('fEmail').value = '';
+  document.getElementById('fPass').value  = '';
+  document.getElementById('fRole').value  = 'athlete';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+// ── Modal: Edit ────────────────────────────────────────────────────────────
+function openEdit(user) {
+  editingId = user._id;
+  document.getElementById('modalTitle').textContent = 'Edit User';
+  document.getElementById('btnSave').textContent    = 'Save Changes';
+  document.getElementById('passHint').style.display       = 'inline';
+  document.getElementById('passHintCreate').style.display = 'none';
+  document.getElementById('fName').value  = user.username || '';
+  document.getElementById('fEmail').value = user.email    || '';
+  document.getElementById('fRole').value  = user.role     || 'athlete';
+  document.getElementById('fPass').value  = '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ── Save ───────────────────────────────────────────────────────────────────
+async function saveUser() {
+  const btn  = document.getElementById('btnSave');
+  const name = document.getElementById('fName').value.trim();
+  const email= document.getElementById('fEmail').value.trim();
+  const role = document.getElementById('fRole').value;
+  const pass = document.getElementById('fPass').value;
+
+  if (!name || !email) { showToast('Name and email are required', 'err'); return; }
+
+  const payload = { username: name, email, role };
+  if (pass) payload.password = pass;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Saving…';
+
+  try {
+    let r;
+    if (editingId) {
+      r = await fetch(`/api/users/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      if (!pass) { showToast('Password required for new users', 'err'); btn.disabled=false; btn.textContent='Create User'; return; }
+      r = await fetch('/api/auth?action=register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+    const d = await r.json();
+    if (!r.ok) { showToast(d.error || 'Error', 'err'); }
+    else {
+      showToast(editingId ? 'User updated ✓' : 'User created ✓', 'ok');
+      document.getElementById('modalOverlay').classList.remove('open');
+      await loadUsers();
+    }
+  } catch(e) {
+    showToast('Network error', 'err');
+  }
+  btn.disabled = false;
+  btn.textContent = editingId ? 'Save Changes' : 'Create User';
+}
+
+// ── Delete ─────────────────────────────────────────────────────────────────
+function openDelete(id, name) {
+  deleteId = id;
+  document.getElementById('confirmMsg').textContent = `Delete "${name}"? This cannot be undone.`;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function closeConfirm(e) {
+  if (e && e.target !== document.getElementById('confirmOverlay')) return;
+  document.getElementById('confirmOverlay').classList.remove('open');
+  deleteId = null;
+}
+
+async function confirmDelete() {
+  if (!deleteId) return;
+  const btn = document.getElementById('btnConfirmDelete');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Deleting…';
+  try {
+    const r = await fetch(`/api/users/${deleteId}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (!r.ok) showToast(d.error || 'Error', 'err');
+    else {
+      showToast('User deleted ✓', 'ok');
+      document.getElementById('confirmOverlay').classList.remove('open');
+      deleteId = null;
+      await loadUsers();
+    }
+  } catch(e) {
+    showToast('Network error', 'err');
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Delete';
+}
+
+// ── Logout ─────────────────────────────────────────────────────────────────
+function logout() { window.location.href = '/api/auth?action=logout'; }
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ── Keyboard ───────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.getElementById('confirmOverlay').classList.remove('open');
+  }
+  if (e.key === 'Enter' && document.getElementById('modalOverlay').classList.contains('open')) {
+    saveUser();
+  }
+});
+
+init();
+</script>
+</body>
+</html>
