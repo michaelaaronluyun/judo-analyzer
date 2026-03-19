@@ -313,11 +313,13 @@ async function init() {
     const r = await fetch('/api/auth?action=me');
     if (!r.ok) { window.location.href = '/'; return; }
     me = await r.json();
-    if (!['admin','coach'].includes(me.role)) {
-      document.getElementById('accessDenied').style.display = 'flex';
-      return;
-    }
+    me.role = me.role || 'athlete'; // normalise
+    const isAdmin = ['admin','coach'].includes(me.role);
     document.getElementById('mainLayout').style.display = 'flex';
+    // Hide write controls for athletes (view-only)
+    if (!isAdmin) {
+      document.querySelectorAll('.btn-primary, .btn-edit, .btn-delete').forEach(el => el.style.display='none');
+    }
     await loadUsers();
   } catch(e) {
     window.location.href = '/';
@@ -351,7 +353,11 @@ function setFilter(role, el) {
   renderTable();
 }
 
+// User lookup map — avoids passing objects through onclick attributes
+let userMap = {};
+
 function renderTable() {
+  const isAdmin = me && me.role === 'admin';
   const q = document.getElementById('searchInput').value.toLowerCase();
   let filtered = allUsers;
   if (filterRole !== 'all') filtered = filtered.filter(u => u.role === filterRole);
@@ -364,10 +370,13 @@ function renderTable() {
     tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><p>No users found</p></div></td></tr>`;
     return;
   }
+  // Store users in map so onclick can look them up by id safely
+  filtered.forEach(u => { userMap[u._id] = u; });
   tbody.innerHTML = filtered.map(u => {
     const ini = (u.username||'?').slice(0,2).toUpperCase();
-    const role = u.role || 'athlete';
+    const role = (u.role && u.role.trim()) ? u.role : 'athlete';
     const isSelf = me && u.email === me.email;
+    const id = u._id;
     return `
     <tr>
       <td>
@@ -384,8 +393,8 @@ function renderTable() {
       </td>
       <td>
         <div class="action-btns">
-          <button class="btn-edit" onclick='openEdit(${JSON.stringify(u)})'>Edit</button>
-          ${!isSelf ? `<button class="btn-delete" onclick="openDelete('${u._id}','${esc(u.username)}')">Delete</button>` : ''}
+          ${isAdmin ? `<button class="btn-edit" onclick="openEditById('${id}')">Edit</button>` : ''}
+          ${isAdmin && !isSelf ? `<button class="btn-delete" onclick="openDelete('${id}','${esc(u.username)}')">Delete</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -411,7 +420,9 @@ function openCreate() {
 }
 
 // ── Modal: Edit ────────────────────────────────────────────────────────────
-function openEdit(user) {
+function openEditById(id) {
+  const user = userMap[id];
+  if (!user) { showToast('User not found', 'err'); return; }
   editingId = user._id;
   document.getElementById('modalTitle').textContent = 'Edit User';
   document.getElementById('btnSave').textContent    = 'Save Changes';

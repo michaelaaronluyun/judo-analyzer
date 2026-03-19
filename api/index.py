@@ -358,9 +358,25 @@ def export_csv():
     return Response(classifier.export_csv(), mimetype="text/csv",
                     headers={"Content-Disposition":"attachment; filename=judo_events.csv"})
 
-# ── Helper: admin/coach guard ─────────────────────────────────────────────────
+# ── Helper: role guards ───────────────────────────────────────────────────────
+def require_login():
+    """Returns (sess, None) if logged in, else (None, error_response)."""
+    sess = read_token()
+    if not sess:
+        return None, (jsonify({"error": "not logged in"}), 401)
+    return sess, None
+
 def require_admin():
-    """Returns (sess, None) if admin/coach, or (None, error_response)."""
+    """Returns (sess, None) if admin only, or (None, error_response)."""
+    sess = read_token()
+    if not sess:
+        return None, (jsonify({"error": "not logged in"}), 401)
+    if sess.get("role") != "admin":
+        return None, (jsonify({"error": "Forbidden — admin role required"}), 403)
+    return sess, None
+
+def require_admin_or_coach():
+    """Returns (sess, None) if admin or coach, or (None, error_response)."""
     sess = read_token()
     if not sess:
         return None, (jsonify({"error": "not logged in"}), 401)
@@ -371,14 +387,16 @@ def require_admin():
 # ── Routes: user management (admin/coach only) ────────────────────────────────
 @app.route("/api/users", methods=["GET"])
 def list_users():
-    sess, err = require_admin()
-    if err: return err
+    # Any logged-in user can view the list (page access controlled in frontend)
+    sess = read_token()
+    if not sess:
+        return jsonify({"error": "not logged in"}), 401
     db = get_db()
     if db is None: return jsonify({"error": "DB not configured"}), 500
     users = list(db["users"].find({}, {"password": 0}))
     for u in users:
         u["_id"] = str(u["_id"])
-        u.setdefault("role", "athlete")
+        u["role"] = u.get("role") or "athlete"  # normalise missing/None roles
     return jsonify(users)
 
 @app.route("/api/users/<user_id>", methods=["PUT"])
