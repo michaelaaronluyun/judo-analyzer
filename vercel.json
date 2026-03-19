@@ -1,18 +1,6 @@
 {
-  "version": 2,
-  "functions": {
-    "api/auth.py":       { "maxDuration": 30, "memory": 1024 },
-    "api/analyze.py":    { "maxDuration": 30, "memory": 1024 },
-    "api/heatmap.py":    { "maxDuration": 30, "memory": 1024 },
-    "api/export_csv.py": { "maxDuration": 30, "memory": 1024 }
-  },
-  "routes": [
-    { "src": "/api/auth",            "dest": "/api/auth.py" },
-    { "src": "/api/analyze",         "dest": "/api/analyze.py" },
-    { "src": "/api/heatmap/reset",   "dest": "/api/heatmap.py" },
-    { "src": "/api/heatmap",         "dest": "/api/heatmap.py" },
-    { "src": "/api/export-csv",      "dest": "/api/export_csv.py" },
-    { "src": "/app",                 "dest": "/public/app.html" },
-    { "src": "/",                    "dest": "/public/index.html" }
+  "rewrites": [
+    { "source": "/app", "destination": "/public/app.html" },
+    { "source": "/",    "destination": "/public/index.html" }
   ]
 }

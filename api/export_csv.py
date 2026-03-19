@@ -1,25 +1,18 @@
-"""
-GET /api/export-csv — returns the event log as a downloadable CSV file.
-"""
-import json
-import os
-import sys
+import os, sys
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
+from flask import Flask, Response
 from lib.state import classifier
 
+app = Flask(__name__)
 
-def handler(event, context):
-    if event.get("httpMethod") != "GET":
-        return {"statusCode": 405, "body": json.dumps({"error": "Method not allowed"})}
-
-    csv_data = classifier.export_csv()
-    return {
-        "statusCode": 200,
-        "headers": {
-            "Content-Type": "text/csv; charset=utf-8",
-            "Content-Disposition": "attachment; filename=judo_events.csv",
-        },
-        "body": csv_data,
-    }
+@app.route("/", methods=["GET"])
+@app.route("/api/export-csv", methods=["GET"])
+def export_csv():
+    return Response(
+        classifier.export_csv(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=judo_events.csv"},
+    )

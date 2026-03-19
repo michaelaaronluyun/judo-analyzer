@@ -1,35 +1,20 @@
-"""
-GET  /api/heatmap        — returns current heatmap data for both athletes
-POST /api/heatmap/reset  — clears heatmap state
-"""
-import json
-import os
-import sys
+import os, sys
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
+from flask import Flask, jsonify
 from lib.state import heatmap_tracker
 
+app = Flask(__name__)
 
-def handler(event, context):
-    method = event.get("httpMethod", "GET")
-    path   = event.get("path", "")
+@app.route("/", methods=["GET"])
+@app.route("/api/heatmap", methods=["GET"])
+def get_heatmap():
+    return jsonify(heatmap_tracker.get_heatmap_data())
 
-    # POST /api/heatmap/reset
-    if method == "POST" and path.endswith("/reset"):
-        heatmap_tracker.reset()
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"ok": True}),
-        }
-
-    # GET /api/heatmap
-    if method == "GET":
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(heatmap_tracker.get_heatmap_data()),
-        }
-
-    return {"statusCode": 405, "body": json.dumps({"error": "Method not allowed"})}
+@app.route("/reset", methods=["POST"])
+@app.route("/api/heatmap/reset", methods=["POST"])
+def reset_heatmap():
+    heatmap_tracker.reset()
+    return jsonify({"ok": True})

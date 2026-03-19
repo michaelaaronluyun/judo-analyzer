@@ -1,39 +1,29 @@
-"""
-POST /api/analyze
-Body: { poses: { "0": { kpIndex: {x,y,s}, ... }, "1": {...} }, videoTime: float }
-Returns athlete analysis, interaction state, recent events.
-"""
-import json
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import os, sys
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
 import numpy as np
+from flask import Flask, request, jsonify
 from lib.state import classifier, heatmap_tracker
 
+app = Flask(__name__)
 
-def handler(event, context):
-    if event.get("httpMethod") != "POST":
-        return {"statusCode": 405, "body": json.dumps({"error": "Method not allowed"})}
-
-    try:
-        data = json.loads(event.get("body") or "{}")
-    except json.JSONDecodeError:
-        return {"statusCode": 400, "body": json.dumps({"error": "Invalid JSON"})}
-
+@app.route("/", methods=["POST"])
+@app.route("/api/analyze", methods=["POST"])
+def analyze():
+    data       = request.get_json(silent=True) or {}
     poses      = data.get("poses", {})
     video_time = data.get("videoTime", 0)
 
-    # Keypoint indices arrive as strings from JSON — cast to int
     clean = {
         int(aid): {int(k): v for k, v in kps.items()}
         for aid, kps in poses.items()
     }
 
-    results = {"athletes": {}, "interaction": False, "interaction_confidence": 0.0}
+    results  = {"athletes": {}, "interaction": False, "interaction_confidence": 0.0}
     all_grip = []
-    aids = sorted(clean.keys())[:2]
+    aids     = sorted(clean.keys())[:2]
 
     for i, aid in enumerate(aids):
         kps     = clean[aid]
@@ -56,8 +46,4 @@ def handler(event, context):
     results["recent_events"] = classifier.event_log[-30:]
     results["total_events"]  = len(classifier.event_log)
 
-    return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps(results),
-    }
+    return jsonify(results)
