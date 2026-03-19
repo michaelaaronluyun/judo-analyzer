@@ -242,6 +242,16 @@ input[type=file]{display:none}
 .ai-coming-tag{display:inline-flex;align-items:center;gap:5px;background:var(--dlsu-green-dim);border:1px solid rgba(0,111,65,0.35);border-radius:20px;padding:4px 12px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dlsu-green-bright);letter-spacing:0.05em;text-transform:uppercase}
 .ai-coming-dot{width:5px;height:5px;border-radius:50%;background:var(--dlsu-green-bright);animation:pulse 1.4s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)}}
+/* ── SAMPLE VIDEOS ───────────────────────────────────────── */
+.sample-card{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;cursor:pointer;transition:border-color 0.2s,background 0.2s;margin-bottom:6px}
+.sample-card:last-child{margin-bottom:0}
+.sample-card:hover{border-color:var(--dlsu-green);background:var(--dlsu-green-dim)}
+.sample-thumb{width:34px;height:34px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sample-info{flex:1;min-width:0}
+.sample-name{font-size:12px;font-weight:600;color:var(--text)}
+.sample-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px}
+.sample-play{font-size:11px;color:var(--dlsu-green-bright);font-weight:700;flex-shrink:0;opacity:0.7}
+.sample-card:hover .sample-play{opacity:1}
 .ai-features{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
 .ai-feat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-align:left;line-height:1.5}
 .ai-feat strong{display:block;color:var(--text2);font-weight:600;margin-bottom:2px}
@@ -435,6 +445,8 @@ input[type=file]{display:none}
     </div>
   </div>
   <div class="topbar-right">
+    <!-- Manage Users link (only for admins) -->
+     <button class="nav-page-btn" onclick="window.location.href='/manage'">Manage Users</button>
     <!-- How to Use link -->
     <button class="nav-page-btn" onclick="openOverlay('overlayHowTo')" title="How to Use">How to Use</button>
     <!-- Settings button -->
@@ -453,6 +465,7 @@ input[type=file]{display:none}
         <div class="pd-head">
           <div class="pd-uname" id="pdUname">—</div>
           <div class="pd-email" id="pdEmail">—</div>
+          <div class="pd-role" id="pdRole" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);padding:2px 14px 8px">—</div>
         </div>
         <div class="pd-row">⏱ Session active</div>
         <div class="pd-div"></div>
@@ -564,6 +577,41 @@ input[type=file]{display:none}
           <div class="upload-card-main" id="uploadLabel">Click to upload footage</div>
           <div class="upload-card-sub" id="uploadSub">No file selected</div>
         </div>
+      </div>
+    </div>
+
+    <!-- SAMPLE VIDEOS -->
+    <div class="panel-section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-title">Sample Matches</span>
+          <span class="help-btn" onclick="showTooltip(this,'Sample Matches','Pre-loaded demo videos for quick analysis. Click any match to instantly load and begin analysis without needing to upload a file.','Useful for demonstrations and presentations. Each sample showcases different judo techniques detected by the system.')">?</span>
+        </div>
+        <span class="section-badge">DEMO</span>
+      </div>
+      <div class="sample-card" onclick="loadSample('https://raw.githubusercontent.com/michaelaaronluyun/judo-analyzer/main/samples/match1.mp4','Sample Match 1')">
+        <div class="sample-thumb">🥋</div>
+        <div class="sample-info">
+          <div class="sample-name">Sample Match 1</div>
+          <div class="sample-sub">Demo footage · Click to load</div>
+        </div>
+        <div class="sample-play">▶</div>
+      </div>
+      <div class="sample-card" onclick="loadSample('https://raw.githubusercontent.com/michaelaaronluyun/judo-analyzer/main/samples/match2.mp4','Sample Match 2')">
+        <div class="sample-thumb">🥋</div>
+        <div class="sample-info">
+          <div class="sample-name">Sample Match 2</div>
+          <div class="sample-sub">Demo footage · Click to load</div>
+        </div>
+        <div class="sample-play">▶</div>
+      </div>
+      <div class="sample-card" onclick="loadSample('https://raw.githubusercontent.com/michaelaaronluyun/judo-analyzer/main/samples/match3.mp4','Sample Match 3')">
+        <div class="sample-thumb">🥋</div>
+        <div class="sample-info">
+          <div class="sample-name">Sample Match 3</div>
+          <div class="sample-sub">Demo footage · Click to load</div>
+        </div>
+        <div class="sample-play">▶</div>
       </div>
     </div>
 
@@ -1073,9 +1121,36 @@ document.getElementById('vIn').addEventListener('change',e=>{
   };
 });
 
+function loadSample(url,label){
+  allEvents=[];detecting=false;analysisActive=false;calDone=false;calFrame=0;
+  calAccum[0]={r:0,g:0,b:0,n:0};calAccum[1]={r:0,g:0,b:0,n:0};
+  giColor[0]={r:128,g:128,b:128,label:'Athlete 1',hex:'#808080',calibrated:false};
+  giColor[1]={r:200,g:200,b:200,label:'Athlete 2',hex:'#c8c8c8',calibrated:false};
+  kpBuf[0].fill(null);kpBuf[1].fill(null);kpRender[0].fill(null);kpRender[1].fill(null);
+  ['swatch0','swatch1'].forEach((id,i)=>{document.getElementById(id).style.background='';document.getElementById('calLabel'+i).textContent='Athlete '+(i+1)+' — calibrating...';});
+  document.getElementById('calStatus').textContent='Calibrating from first '+CAL_FRAMES+' frames...';
+  document.getElementById('calBadge').textContent='CALIBRATING';
+  document.getElementById('eventLog').innerHTML='<div class="event-empty">No events yet...</div>';
+  document.getElementById('hudStatus').classList.remove('show');
+  document.getElementById('eventCount').textContent='0';document.getElementById('athCount').textContent='0';
+  [0,1].forEach(i=>{const card=document.getElementById('athCard'+i);card.style.borderTopColor='var(--text3)';card.querySelector('.ath-technique').textContent='Waiting...';const inner=card.querySelector('.ath-inner');if(inner)inner.innerHTML='';});
+  document.getElementById('uploadPlaceholder').classList.add('hidden');
+  document.getElementById('uploadLabel').textContent=label;
+  document.getElementById('uploadSub').textContent='Sample video';
+  video.src=url;video.loop=false;video.style.display='block';canvas.style.display='block';
+  setStatus('Loading sample...');
+  video.onloadedmetadata=()=>{
+    canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    video.play().then(()=>{
+      if(!detector){setStatus('Model loading — please wait...');const wait=setInterval(()=>{if(detector){clearInterval(wait);analysisActive=true;setStatus('Calibrating gi colours ('+CAL_FRAMES+' frames)...');renderLoop();startDetectLoop();}},500);return;}
+      analysisActive=true;setStatus('Calibrating gi colours ('+CAL_FRAMES+' frames)...');renderLoop();startDetectLoop();
+    });
+  };
+}
+
 initModel();
 
-(async()=>{try{const r=await fetch('/api/auth?action=me');if(!r.ok)return;const u=await r.json();const ini=(u.username||u.email||'?').slice(0,2).toUpperCase();document.getElementById('profAv').textContent=ini;document.getElementById('profName').textContent=u.username||u.email;document.getElementById('pdUname').textContent=u.username||'—';document.getElementById('pdEmail').textContent=u.email||'—';}catch(e){}})();
+(async()=>{try{const r=await fetch('/api/auth?action=me');if(!r.ok)return;const u=await r.json();const ini=(u.username||u.email||'?').slice(0,2).toUpperCase();document.getElementById('profAv').textContent=ini;document.getElementById('profName').textContent=u.username||u.email;document.getElementById('pdUname').textContent=u.username||'—';document.getElementById('pdEmail').textContent=u.email||'—';const ROLE_LABELS={admin:'👑 Admin',coach:'🥋 Coach',athlete:'🏅 Athlete'};const pdRole=document.getElementById('pdRole');if(pdRole)pdRole.textContent=ROLE_LABELS[u.role]||u.role||'—';const manageBtn=document.getElementById('btnManageUsers');if(manageBtn&&['admin','coach'].includes(u.role))manageBtn.style.display='';}catch(e){}})();
 
 /* ── HEATMAP ─────────────────────────────────────────────── */
 let heatmapViewAth=0,heatmapData=null;
@@ -1249,7 +1324,7 @@ setInterval(()=>{if(analysisActive)fetchHeatmap();},1500);
       <div class="ov-section-label">Contact</div>
       <h2>Need more help?</h2>
       <p>For technical issues or feedback, reach out to the development team directly via email:</p>
-      <ul style="margin:10px 0 10px 18px;font-size:13px;color:var(--text2);line-height:2"><li><a href="mailto:michael_aaron_luyun@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">michael_aaron_luyun@dlsu.edu.ph</a> — Michael Aaron Luyun</li><li><a href="mailto:algen_abagat@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">algen_abagat@dlsu.edu.ph</a> — Algen Roi Abagat</li><li><a href="mailto:cochise_king@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">cochise_king@dlsu.edu.ph</a> — King Cochise John</li><li><a href="mailto:cody_casem@dlsu.edu.ph" style="color:var(--dlsu-green-bright);text-decoration:none">cody_casem@dlsu.edu.ph</a> — Cody Casem</li></ul><p style="font-size:13px;color:var(--text2);line-height:1.7">You may also contact supervising professor Dr. Raphael Gonda through the DLSU course portal.</p>
+      <ul style="margin:10px 0 10px 18px;font-size:13px;color:var(--text2);line-height:2"><li><a href="/cdn-cgi/l/email-protection#a6cbcfc5cec7c3caf9c7c7d4c9c8f9cad3dfd3c8e6c2cad5d388c3c2d388d6ce" style="color:var(--dlsu-green-bright);text-decoration:none"><span class="__cf_email__" data-cfemail="422f2b212a23272e1d2323302d2c1d2e373b372c02262e31376c2726376c322a">[email&#160;protected]</span></a> — Michael Aaron Luyun</li><li><a href="/cdn-cgi/l/email-protection#5a3b363d3f34053b383b3d3b2e1a3e36292f743f3e2f742a32" style="color:var(--dlsu-green-bright);text-decoration:none"><span class="__cf_email__" data-cfemail="e3828f84868dbc828182848297a3878f9096cd868796cd938b">[email&#160;protected]</span></a> — Algen Roi Abagat</li><li><a href="/cdn-cgi/l/email-protection#75161a161d1c06102a1e1c1b1235111906005b1011005b051d" style="color:var(--dlsu-green-bright);text-decoration:none"><span class="__cf_email__" data-cfemail="e4878b878c8d9781bb8f8d8a83a480889791ca818091ca948c">[email&#160;protected]</span></a> — King Cochise John</li><li><a href="/cdn-cgi/l/email-protection#40232f24391f232133252d00242c33356e2524356e3028" style="color:var(--dlsu-green-bright);text-decoration:none"><span class="__cf_email__" data-cfemail="b6d5d9d2cfe9d5d7c5d3dbf6d2dac5c398d3d2c398c6de">[email&#160;protected]</span></a> — Cody Casem</li></ul><p style="font-size:13px;color:var(--text2);line-height:1.7">You may also contact supervising professor Dr. Raphael Gonda through the DLSU course portal.</p>
       <div class="ov-note"><div class="ov-note-icon">ℹ️</div><p>This system is an academic prototype developed for ITISDEV/ITISHCI/Research Study at De La Salle University. It is not intended for commercial use.</p></div>
     </div>
 
@@ -1328,7 +1403,7 @@ setInterval(()=>{if(analysisActive)fetchHeatmap();},1500);
 
   </div>
 </div>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ── PAGE OVERLAY SYSTEM ─────────────────────────────────── */
 function openOverlay(id){
   document.getElementById(id).classList.add('open');
@@ -1468,18 +1543,4 @@ video.addEventListener('timeupdate', vcUpdateProgress);
   function scrub(e){
     const rect = document.getElementById('vcProgressTrack').getBoundingClientRect();
     const x    = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const pct  = x / rect.width;
-    video.currentTime = pct * (video.duration || 0);
-  }
-  wrap.addEventListener('mousedown', function(e){ scrubbing=true; scrub(e); e.stopPropagation(); });
-  document.addEventListener('mousemove', function(e){ if(scrubbing) scrub(e); });
-  document.addEventListener('mouseup',   function()  { scrubbing=false; });
-  // touch
-  wrap.addEventListener('touchstart', function(e){ scrubbing=true; scrub(e.touches[0]); e.preventDefault(); },{passive:false});
-  document.addEventListener('touchmove',  function(e){ if(scrubbing) scrub(e.touches[0]); },{passive:false});
-  document.addEventListener('touchend',   function()  { scrubbing=false; });
-})();
-
-</script>
-</body>
-</html>
+    const pct  = x / re
