@@ -8,7 +8,7 @@
     { "src": "/api/(.*)", "dest": "/api/index.py" },
     { "src": "/manage",   "dest": "/public/manage.html" },
     { "src": "/app",      "dest": "/public/app.html" },
-    { "src": "/samples/(.*)", "dest": "/public/samples/$1" },
+    { "src": "/samples/(.*)", "dest": "/public/sample/$1" },
     { "src": "/",         "dest": "/public/index.html" }
   ]
 }
