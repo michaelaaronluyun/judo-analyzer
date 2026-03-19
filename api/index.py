@@ -262,7 +262,7 @@ heatmap_tracker = ContactHeatmapTracker()
 
 # ── Helper: read HTML files ───────────────────────────────────────────────────
 def _read_html(filename):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public", filename)
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", filename)
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
