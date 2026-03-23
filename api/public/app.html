@@ -1543,4 +1543,18 @@ video.addEventListener('timeupdate', vcUpdateProgress);
   function scrub(e){
     const rect = document.getElementById('vcProgressTrack').getBoundingClientRect();
     const x    = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const pct  = x / re
+    const pct  = x / rect.width;
+    video.currentTime = pct * (video.duration || 0);
+  }
+  wrap.addEventListener('mousedown', function(e){ scrubbing=true; scrub(e); e.stopPropagation(); });
+  document.addEventListener('mousemove', function(e){ if(scrubbing) scrub(e); });
+  document.addEventListener('mouseup',   function()  { scrubbing=false; });
+  // touch
+  wrap.addEventListener('touchstart', function(e){ scrubbing=true; scrub(e.touches[0]); e.preventDefault(); },{passive:false});
+  document.addEventListener('touchmove',  function(e){ if(scrubbing) scrub(e.touches[0]); },{passive:false});
+  document.addEventListener('touchend',   function()  { scrubbing=false; });
+})();
+
+</script>
+</body>
+</html>
